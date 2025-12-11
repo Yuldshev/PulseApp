@@ -17,17 +17,25 @@ final class WorkoutDataService: WorkoutDataServiceProtocol {
   }
   
   func loadWorkouts() async throws -> [Workout] {
+    if let cached = DataCache.shared.getCachedWorkouts() { return cached }
+    
     let response: WorkoutListResponse = try await loadJSON(fileName: "list_workouts")
+    DataCache.shared.cacheWorkouts(response.data)
     return response.data
   }
   
   func loadMetadata() async throws -> [String: WorkoutMetadata] {
+    if let cached = DataCache.shared.getCachedMetadata() { return cached }
+    
     let response: MetadataResponse = try await loadJSON(fileName: "metadata")
+    DataCache.shared.cacheMetadata(response.workouts)
     return response.workouts
   }
   
   func loadDiagramData() async throws -> [String: WorkoutDiagramData] {
+    if let cached = DataCache.shared.getCachedDiagramData() { return cached }
     let response: DiagramDataResponse = try await loadJSON(fileName: "diagram_data")
+    DataCache.shared.cacheDiagramData(response.workouts)
     return response.workouts
   }
   

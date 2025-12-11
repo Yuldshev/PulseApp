@@ -52,6 +52,7 @@ final class AppCoordinator {
       }
     )
     .navigationTitle("Pulse")
+    .navigationBarTitleDisplayMode(.inline)
   }
   
   @ViewBuilder

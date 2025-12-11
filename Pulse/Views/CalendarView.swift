@@ -10,15 +10,21 @@ struct CalendarView: View {
   private let weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
   
   var body: some View {
-    VStack(spacing: 20) {
-      monthNavigationHeader
-      weekdayHeaders
-      calendarGrid
-      workoutsList
-      
-      Spacer()
+    ScrollView(.vertical, showsIndicators: false) {
+      VStack(spacing: 20) {
+        VStack {
+          monthNavigationHeader
+          weekdayHeaders
+          calendarGrid
+        }
+        .padding()
+        .background(Color(.secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .padding()
+        
+        workoutsList
+      }
     }
-    .padding()
     .task { await vm.loadWorkouts() }
   }
 }
@@ -97,11 +103,23 @@ private extension CalendarView {
           }
         }
       } else {
-        Text("No workouts for this day")
-          .font(.subheadline)
-          .foregroundStyle(.secondary)
-          .frame(maxWidth: .infinity, alignment: .center)
-          .padding()
+        VStack(spacing: 16) {
+          Image(systemName: "figure.run.circle")
+            .font(.system(size: 60))
+            .foregroundStyle(.secondary.opacity(0.5))
+          
+          VStack(spacing: 4) {
+            Text("No Workouts")
+              .font(.headline)
+              .foregroundStyle(.primary)
+            
+            Text("No activities recorded for this day")
+              .font(.subheadline)
+              .foregroundStyle(.secondary)
+          }
+        }
+        .padding(.vertical, 56)
+        .frame(maxWidth: .infinity)
       }
     }
   }
@@ -165,7 +183,7 @@ struct DayCell: View {
     if isSelected {
       return .blue
     } else {
-      return Color(.systemBackground)
+      return Color(.secondarySystemBackground)
     }
   }
   
@@ -209,11 +227,13 @@ struct WorkoutRow: View {
           Text(workout.workoutActivityType)
             .font(.headline)
             .foregroundStyle(.primary)
+            .lineLimit(1)
           
           HStack(spacing: 8) {
             Text(timeString)
               .font(.subheadline)
               .foregroundStyle(.secondary)
+              .lineLimit(1)
             
             if let metadata = metadata, metadata.distanceInKm > 0 {
               Text("•")
@@ -221,6 +241,7 @@ struct WorkoutRow: View {
               Text(String(format: "%.2f km", metadata.distanceInKm))
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
+                .lineLimit(1)
             }
             
             if let metadata = metadata {
@@ -229,6 +250,7 @@ struct WorkoutRow: View {
               Text(metadata.durationFormatted)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
+                .lineLimit(1)
             }
           }
         }

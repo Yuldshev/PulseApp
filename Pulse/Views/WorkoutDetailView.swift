@@ -9,20 +9,22 @@ struct WorkoutDetailView: View {
   
   var body: some View {
     ScrollView {
-      VStack(alignment: .leading, spacing: 24) {
+      VStack(alignment: .leading, spacing: 16) {
         headerSection
         
-        if let metadata = vm.metadata {
-          statsSection(metadata: metadata)
-        }
-        
-        if let diagramData = vm.diagramData {
-          heartRateChart(data: diagramData.data)
-          additionalMetrics(data: diagramData.data)
-        }
-        
-        if let metadata = vm.metadata, !metadata.comment.isEmpty {
-          commentSection(comment: metadata.comment)
+        VStack(spacing: 38) {
+          if let metadata = vm.metadata {
+            statsSection(metadata: metadata)
+          }
+          
+          if let diagramData = vm.diagramData {
+            HeartCart(data: diagramData.data)
+            SpeedCart(data: diagramData.data)
+          }
+          
+          if let metadata = vm.metadata, !metadata.comment.isEmpty {
+            commentSection(comment: metadata.comment)
+          }
         }
       }
       .padding()
@@ -55,122 +57,30 @@ private extension WorkoutDetailView {
   }
   
   func statsSection(metadata: WorkoutMetadata) -> some View {
-    VStack(spacing: 16) {
-      Text("Stats")
-        .font(.headline)
-        .frame(maxWidth: .infinity, alignment: .leading)
+    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+      StatCard(
+        title: "Distance",
+        value: metadata.distanceInKm > 0 ? String(format: "%.2f km", metadata.distanceInKm) : "N/A",
+        icon: "figure.walk"
+      )
       
-      LazyVGrid(columns: [
-        GridItem(.flexible()),
-        GridItem(.flexible())
-      ], spacing: 16) {
-        StatCard(
-          title: "Distance",
-          value: metadata.distanceInKm > 0 ? String(format: "%.2f km", metadata.distanceInKm) : "N/A",
-          icon: "figure.walk"
-        )
-        
-        StatCard(
-          title: "Duration",
-          value: metadata.durationFormatted,
-          icon: "clock"
-        )
-        
-        StatCard(
-          title: "Avg Temp",
-          value: "\(metadata.avg_temp)°C",
-          icon: "thermometer"
-        )
-        
-        StatCard(
-          title: "Humidity",
-          value: "\(metadata.avg_humidity)%",
-          icon: "humidity"
-        )
-      }
-    }
-  }
-  
-  func heartRateChart(data: [DiagramDataPoint]) -> some View {
-    VStack(alignment: .leading, spacing: 12) {
-      Text("Heart Rate")
-        .font(.headline)
+      StatCard(
+        title: "Duration",
+        value: metadata.durationFormatted,
+        icon: "clock"
+      )
       
-      Chart(data) { point in
-        LineMark(
-          x: .value("Time", point.time_numeric),
-          y: .value("Heart Rate", point.heartRate)
-        )
-        .foregroundStyle(.red)
-        .interpolationMethod(.catmullRom)
-        
-        AreaMark(
-          x: .value("Time", point.time_numeric),
-          y: .value("Heart Rate", point.heartRate)
-        )
-        .foregroundStyle(
-          LinearGradient(
-            colors: [.red.opacity(0.3), .red.opacity(0.1)],
-            startPoint: .top,
-            endPoint: .bottom
-          )
-        )
-        .interpolationMethod(.catmullRom)
-      }
-      .chartYAxis {
-        AxisMarks(position: .leading)
-      }
-      .chartXAxis {
-        AxisMarks(values: .automatic) { _ in
-          AxisValueLabel()
-        }
-      }
-      .frame(height: 250)
-      .padding()
-      .background(Color(.secondarySystemBackground))
-      .clipShape(RoundedRectangle(cornerRadius: 12))
+      StatCard(
+        title: "Avg Temp",
+        value: "\(metadata.avg_temp)°C",
+        icon: "thermometer"
+      )
       
-      // Heart rate stats
-      if let minHR = data.map({ $0.heartRate }).min(),
-         let maxHR = data.map({ $0.heartRate }).max(),
-         let avgHR = calculateAverage(data.map({ $0.heartRate })) {
-        HStack(spacing: 20) {
-          HRStat(label: "Min", value: minHR, color: .green)
-          HRStat(label: "Avg", value: avgHR, color: .orange)
-          HRStat(label: "Max", value: maxHR, color: .red)
-        }
-        .frame(maxWidth: .infinity)
-      }
-    }
-  }
-  
-  func additionalMetrics(data: [DiagramDataPoint]) -> some View {
-    VStack(alignment: .leading, spacing: 12) {
-      Text("Additional Metrics")
-        .font(.headline)
-      
-      // Speed chart
-      if data.contains(where: { $0.speed_kmh > 0 }) {
-        Chart(data.filter { $0.speed_kmh > 0 }) { point in
-          LineMark(
-            x: .value("Time", point.time_numeric),
-            y: .value("Speed", point.speed_kmh)
-          )
-          .foregroundStyle(.blue)
-          .interpolationMethod(.catmullRom)
-        }
-        .frame(height: 150)
-        .padding()
-        .background(Color(.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .overlay(
-          Text("Speed (km/h)")
-            .font(.caption)
-            .foregroundStyle(.secondary)
-            .padding(8),
-          alignment: .topLeading
-        )
-      }
+      StatCard(
+        title: "Humidity",
+        value: "\(metadata.avg_humidity)%",
+        icon: "humidity"
+      )
     }
   }
   
@@ -223,6 +133,7 @@ struct StatCard: View {
         .font(.caption)
         .foregroundStyle(.secondary)
     }
+    .frame(height: 80)
     .frame(maxWidth: .infinity)
     .padding()
     .background(Color(.secondarySystemBackground))
@@ -264,7 +175,23 @@ struct HRStat: View {
           workoutActivityType: "Walking/Running",
           workoutStartDate: "2025-11-25 09:30:00"
         ),
-        metadata: nil
+        metadata: WorkoutMetadata(
+          workoutKey: "7823456789012345",
+          workoutActivityType: "Walking/Running",
+          workoutStartDate: "2025-11-25 09:30:00",
+          distance: "5230.50",
+          duration: "2700.00",
+          maxLayer: 2,
+          maxSubLayer: 4,
+          avg_humidity: "65.00",
+          avg_temp: "12.50",
+          comment: "Утренняя пробежка в парке",
+          photoBefore: nil,
+          photoAfter: nil,
+          heartRateGraph: nil,
+          activityGraph: nil,
+          map: nil
+        )
       )
     )
   }
