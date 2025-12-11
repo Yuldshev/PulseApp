@@ -18,11 +18,8 @@ final class AppCoordinator {
   // Nav methods
   func showWorkoutDetail(workout: Workout, metadata: WorkoutMetadata?) {
     selectedWorkout = (workout, metadata)
-    path.append(WorkoutDetailDestination(
-        workout: workout,
-        metadata:
-          metadata
-      ))
+    path.append(WorkoutDetailDestination(workout: workout, metadata: metadata)
+    )
   }
   
   func popToRoot() { path.removeLast(path.count) }
