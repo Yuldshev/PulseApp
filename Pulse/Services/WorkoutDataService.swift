@@ -32,16 +32,43 @@ final class WorkoutDataService: WorkoutDataServiceProtocol {
   }
   
   private func loadJSON<T: Decodable>(fileName: String) async throws -> T {
-    guard let url = Bundle.main.url(
+    var url: URL?
+    
+    url = Bundle.main.url(
       forResource: fileName,
       withExtension: "json",
-      subdirectory: "Resources/data"
-    ) else {
+      subdirectory:
+        "Resources/data"
+    )
+    
+    if url == nil {
+      url = Bundle.main.url(
+        forResource: fileName,
+        withExtension: "json",
+        subdirectory:
+          "Resources"
+      )
+    }
+    
+    if url == nil {
+      url = Bundle.main.url(
+        forResource: fileName,
+        withExtension: "json",
+        subdirectory:
+          "data"
+      )
+    }
+    
+    if url == nil {
+      url = Bundle.main.url(forResource: fileName, withExtension: "json")
+    }
+    
+    guard let fileURL = url else {
       throw DataError.fileNotFound
     }
     
     do {
-      let data = try Data(contentsOf: url)
+      let data = try Data(contentsOf: fileURL)
       let decoder = JSONDecoder()
       return try decoder.decode(T.self, from: data)
     } catch let decodingError as DecodingError {

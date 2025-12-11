@@ -12,6 +12,7 @@ struct Workout: Identifiable, Codable {
     let formatter = DateFormatter()
     formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
     formatter.locale = Locale(identifier: "en_US_POSIX")
+    formatter.timeZone = TimeZone(secondsFromGMT: 0)
     return formatter.date(from: workoutStartDate)
   }
   
